@@ -9,7 +9,7 @@ export default async function StandardsPage() {
   const standards = await getContainer().marketStandards.list(actor.orgId);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="max-w-3xl">
       <p className="eyebrow">Configuration</p>
       <h1 className="mt-2 text-3xl text-[var(--ink)]">Market-standard baseline</h1>
       <p className="mt-2 text-[var(--ink-2)]">

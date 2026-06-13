@@ -8,7 +8,7 @@ export function SummaryPanel({ analysis }: { analysis: Analysis | null }) {
     return <p className="text-sm text-[var(--ink-3)]">Summary not generated yet.</p>;
   }
   return (
-    <div className="grid grid-cols-[1fr_280px] gap-8 max-md:grid-cols-1">
+    <div className="grid grid-cols-[minmax(0,68ch)_320px] gap-12 max-md:grid-cols-1">
       <div>
         <p
           className="text-lg leading-relaxed text-[var(--ink)]"

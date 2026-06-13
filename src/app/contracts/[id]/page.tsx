@@ -39,7 +39,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <p className="eyebrow">Contract</p>
       <h1 className="mt-2 text-3xl text-[var(--ink)]">{contract.title}</h1>
       <p className="mono mt-1 text-xs text-[var(--ink-3)]">

@@ -10,7 +10,7 @@ export default async function ComparePage() {
   const ready = all.filter((c) => c.status === "ready").map((c) => ({ id: c.id, title: c.title }));
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <p className="eyebrow">Due diligence</p>
       <h1 className="mt-2 text-3xl text-[var(--ink)]">Compare a clause across contracts</h1>
       <p className="mt-2 text-[var(--ink-2)]">

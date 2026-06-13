@@ -15,7 +15,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 border-b border-[var(--paper-edge)] bg-[var(--paper)]/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-6 max-md:px-4">
+        <div className="flex h-16 items-center justify-between gap-6 px-8 max-md:px-4">
           <Link href="/" className="flex shrink-0 items-center gap-2.5">
             <BrandMark size={32} />
             <span
@@ -35,9 +35,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 max-md:px-4 max-md:py-6">
-        {children}
-      </main>
+      <main className="w-full flex-1 px-8 py-10 max-md:px-4 max-md:py-6">{children}</main>
       <Disclaimer />
     </div>
   );
