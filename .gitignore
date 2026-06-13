@@ -42,3 +42,6 @@ next-env.d.ts
 
 # code-review-graph MCP cache
 .code-review-graph/
+
+# clerk configuration (can include secrets)
+/.clerk/

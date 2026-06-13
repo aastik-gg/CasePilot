@@ -1,10 +1,27 @@
 import { and, asc, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { db } from "@/infrastructure/db/client";
-import { contracts, crossReferences, documentNodes } from "@/infrastructure/db/schema";
-import type { ContractRepo, DocumentNodeRepo } from "@/domain/ports/repositories";
+import {
+  analyses,
+  clauses,
+  contracts,
+  crossReferences,
+  documentNodes,
+  llmCalls,
+} from "@/infrastructure/db/schema";
+import type {
+  AnalysisRepo,
+  ClauseRepo,
+  ContractRepo,
+  DocumentNodeRepo,
+  LlmCallRepo,
+  NewAnalysis,
+  NewClause,
+} from "@/domain/ports/repositories";
 import type { Contract, ContractStatus, RegisterContractInput } from "@/domain/schemas/contract";
 import type { CrossReference, DocumentNode, ParsedDocument } from "@/domain/schemas/document";
+import type { Clause, ClauseType } from "@/domain/schemas/clause";
+import type { Analysis } from "@/domain/schemas/analysis";
 
 type ContractRow = typeof contracts.$inferSelect;
 
@@ -127,5 +144,97 @@ export class DrizzleDocumentNodeRepo implements DocumentNodeRepo {
       .select()
       .from(crossReferences)
       .where(eq(crossReferences.contractId, contractId)) as Promise<CrossReference[]>;
+  }
+}
+
+export class DrizzleClauseRepo implements ClauseRepo {
+  async replaceForContract(contractId: string, items: NewClause[]): Promise<void> {
+    await db().transaction(async (tx) => {
+      await tx.delete(clauses).where(eq(clauses.contractId, contractId));
+      if (items.length) {
+        await tx.insert(clauses).values(
+          items.map((c) => ({
+            contractId,
+            clauseType: c.clauseType,
+            nodeIds: c.nodeIds,
+            verbatimText: c.verbatimText,
+            confidence: c.confidence,
+            pageAnchor: c.pageAnchor,
+          })),
+        );
+      }
+    });
+  }
+
+  async listByContract(contractId: string): Promise<Clause[]> {
+    const rows = await db()
+      .select()
+      .from(clauses)
+      .where(eq(clauses.contractId, contractId))
+      .orderBy(asc(clauses.createdAt));
+    return rows.map((r) => ({
+      id: r.id,
+      contractId: r.contractId,
+      clauseType: r.clauseType as ClauseType,
+      nodeIds: r.nodeIds,
+      verbatimText: r.verbatimText,
+      confidence: r.confidence,
+      pageAnchor: r.pageAnchor,
+      createdAt: r.createdAt,
+    }));
+  }
+}
+
+export class DrizzleAnalysisRepo implements AnalysisRepo {
+  async save(a: NewAnalysis): Promise<void> {
+    const row = {
+      contractId: a.contractId,
+      overview: a.overview,
+      whoCarriesRisk: a.whoCarriesRisk,
+      keyTerms: a.keyTerms,
+      topIssues: a.topIssues,
+      modelVersions: a.modelVersions,
+    };
+    await db()
+      .insert(analyses)
+      .values(row)
+      .onConflictDoUpdate({ target: analyses.contractId, set: row });
+  }
+
+  async getByContract(contractId: string): Promise<Analysis | null> {
+    const [r] = await db()
+      .select()
+      .from(analyses)
+      .where(eq(analyses.contractId, contractId))
+      .limit(1);
+    if (!r) return null;
+    return {
+      contractId: r.contractId,
+      overview: r.overview,
+      whoCarriesRisk: r.whoCarriesRisk,
+      keyTerms: r.keyTerms as Analysis["keyTerms"],
+      topIssues: r.topIssues as Analysis["topIssues"],
+      modelVersions: r.modelVersions as Record<string, string>,
+      createdAt: r.createdAt,
+    };
+  }
+}
+
+export class DrizzleLlmCallRepo implements LlmCallRepo {
+  async log(input: {
+    contractId: string;
+    stage: string;
+    model: string;
+    promptVersion: string;
+    usage: { inputTokens: number; outputTokens: number };
+  }): Promise<void> {
+    await db().insert(llmCalls).values({
+      contractId: input.contractId,
+      stage: input.stage,
+      model: input.model,
+      promptVersion: input.promptVersion,
+      inputTokens: input.usage.inputTokens,
+      outputTokens: input.usage.outputTokens,
+    });
   }
 }

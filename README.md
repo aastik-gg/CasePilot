@@ -35,5 +35,9 @@ code dispatches stages durably over HTTP.
 - **P0 — Foundation ✅** Auth (Clerk), presigned R2 upload, ingestion pipeline (PDF/DOCX → structured
   tree preserving numbering + cross-references), live SSE status, document-tree UI. Resumable staged
   pipeline + composition root in place.
-- **P1 — Extraction + Summary** (next) clause extraction (7 types) + plain-English summary via the Vercel AI SDK.
-- **P2 — Benchmark + Risk** · **P3 — Compare + Polish** — see `../docs/PROJECT_PLAN.md`.
+- **P1 — Extraction + Summary ✅** Clause extraction (7 named types) via Opus 4.8 + structured outputs,
+  grounded to source text; plain-English executive summary (overview, who-carries-risk, key terms,
+  top-3 issues). Vercel AI SDK behind `LlmPort`; `ModelRouter` factory; every call audited in `llm_calls`.
+  Pipeline now: ingest → extract → summarise.
+- **P2 — Benchmark + Risk** (next) market-standard baseline, deviation labels, risk scoring.
+- **P3 — Compare + Polish** — see `../docs/PROJECT_PLAN.md`.

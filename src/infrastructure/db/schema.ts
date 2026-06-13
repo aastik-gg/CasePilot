@@ -2,7 +2,9 @@ import { sql } from "drizzle-orm";
 import {
   index,
   integer,
+  jsonb,
   pgTable,
+  real,
   text,
   timestamp,
   uuid,
@@ -65,6 +67,50 @@ export const crossReferences = pgTable(
     rawText: text("raw_text").notNull(),
   },
   (t) => [index("cross_references_contract_idx").on(t.contractId)],
+);
+
+export const clauses = pgTable(
+  "clauses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    contractId: uuid("contract_id")
+      .notNull()
+      .references(() => contracts.id, { onDelete: "cascade" }),
+    clauseType: text("clause_type").notNull(),
+    nodeIds: text("node_ids").array().notNull(),
+    verbatimText: text("verbatim_text").notNull(),
+    confidence: real("confidence").notNull(),
+    pageAnchor: integer("page_anchor"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("clauses_contract_idx").on(t.contractId)],
+);
+
+export const analyses = pgTable("analyses", {
+  contractId: uuid("contract_id")
+    .primaryKey()
+    .references(() => contracts.id, { onDelete: "cascade" }),
+  overview: text("overview").notNull(),
+  whoCarriesRisk: text("who_carries_risk").notNull(),
+  keyTerms: jsonb("key_terms").notNull(),
+  topIssues: jsonb("top_issues").notNull(),
+  modelVersions: jsonb("model_versions").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const llmCalls = pgTable(
+  "llm_calls",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    contractId: uuid("contract_id").notNull(),
+    stage: text("stage").notNull(),
+    model: text("model").notNull(),
+    promptVersion: text("prompt_version").notNull(),
+    inputTokens: integer("input_tokens").notNull(),
+    outputTokens: integer("output_tokens").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("llm_calls_contract_idx").on(t.contractId)],
 );
 
 export const pipelineRuns = pgTable(

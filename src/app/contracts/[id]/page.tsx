@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { currentActor } from "@/infrastructure/auth";
 import { getContainer } from "@/composition/container";
 import { IngestStatus } from "@/app/(ui)/components/IngestStatus";
+import { SummaryPanel } from "@/app/(ui)/components/SummaryPanel";
+import { ClauseList } from "@/app/(ui)/components/ClauseList";
 import { DocumentTree } from "@/app/(ui)/components/DocumentTree";
 
 export default async function ContractPage({ params }: { params: Promise<{ id: string }> }) {
@@ -9,11 +11,18 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   if (!actor) return null;
 
   const { id } = await params;
-  const { contracts, nodes } = getContainer();
+  const { contracts, nodes, clauses, analyses } = getContainer();
   const contract = await contracts.findById(actor.orgId, id);
   if (!contract) notFound();
 
-  const tree = contract.status === "ready" ? await nodes.listByContract(id) : [];
+  const ready = contract.status === "ready";
+  const [tree, clauseList, analysis] = ready
+    ? await Promise.all([
+        nodes.listByContract(id),
+        clauses.listByContract(id),
+        analyses.getByContract(id),
+      ])
+    : [[], [], null];
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -28,10 +37,24 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
         <IngestStatus contractId={contract.id} initial={contract.status} />
       </div>
 
-      <section className="mt-10">
-        <p className="eyebrow mb-3">Structure</p>
-        <DocumentTree nodes={tree} />
-      </section>
+      {ready && (
+        <>
+          <section className="mt-10">
+            <p className="eyebrow mb-4">Executive summary</p>
+            <SummaryPanel analysis={analysis} />
+          </section>
+
+          <section className="mt-12">
+            <p className="eyebrow mb-4">Clauses</p>
+            <ClauseList clauses={clauseList} />
+          </section>
+
+          <section className="mt-12">
+            <p className="eyebrow mb-3">Structure</p>
+            <DocumentTree nodes={tree} />
+          </section>
+        </>
+      )}
     </div>
   );
 }
