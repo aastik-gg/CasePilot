@@ -28,20 +28,23 @@ export function Dropzone() {
       }
       try {
         setPhase("uploading");
-        const presign = await fetch("/api/contracts/presign", {
+        const presignRes = await fetch("/api/contracts/presign", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ filename: file.name, contentType: file.type }),
-        }).then((r) => r.json());
+        });
+        if (!presignRes.ok) throw new Error(`presign failed (${presignRes.status})`);
+        const presign = await presignRes.json();
 
-        await fetch(presign.url, {
+        const putRes = await fetch(presign.url, {
           method: "PUT",
           headers: { "content-type": file.type },
           body: file,
         });
+        if (!putRes.ok) throw new Error(`storage upload failed (${putRes.status})`);
 
         setPhase("registering");
-        const contract = await fetch("/api/contracts", {
+        const regRes = await fetch("/api/contracts", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -50,11 +53,15 @@ export function Dropzone() {
             originalFilename: file.name,
             mimeType: file.type,
           }),
-        }).then((r) => r.json());
+        });
+        if (!regRes.ok) throw new Error(`register failed (${regRes.status})`);
+        const contract = await regRes.json();
 
         router.push(`/contracts/${contract.id}`);
-      } catch {
-        setError("Upload failed. Please try again.");
+      } catch (e) {
+        // A failed cross-origin PUT throws a TypeError with no status — usually R2 CORS.
+        const msg = e instanceof Error ? e.message : "unknown error";
+        setError(`Upload failed: ${msg}. If this is the storage step, the R2 bucket CORS may not allow this origin.`);
         setPhase("error");
       }
     },
