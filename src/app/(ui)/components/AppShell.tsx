@@ -7,7 +7,7 @@ import { Disclaimer } from "@/app/(ui)/components/Disclaimer";
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const { userId } = await auth();
   return (
-    <div className="grid min-h-full grid-cols-[260px_1fr] max-md:grid-cols-1">
+    <div className="grid min-h-screen grid-cols-[260px_1fr] max-md:grid-cols-1">
       <aside className="flex flex-col border-r border-[var(--paper-edge)] bg-[var(--paper-2)] p-6 max-md:hidden">
         <Link href="/" className="block">
           <p className="eyebrow">Legal Document Intelligence</p>
@@ -26,7 +26,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mt-auto pt-6">{userId ? <UserButton /> : <SignInButton />}</div>
       </aside>
 
-      <div className="flex min-h-full flex-col">
+      <div className="flex flex-col">
         <main className="flex-1 px-8 py-10 max-md:px-5">{children}</main>
         <Disclaimer />
       </div>
