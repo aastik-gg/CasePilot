@@ -7,8 +7,8 @@ import type { ReactNode } from "react";
 function Icon({ d }: { d: string }) {
   return (
     <svg
-      width="18"
-      height="18"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -36,7 +36,7 @@ export function SidebarNav() {
     href === "/" ? pathname === "/" || pathname.startsWith("/contracts") : pathname.startsWith(href);
 
   return (
-    <nav className="mt-8 flex flex-col gap-0.5">
+    <nav className="mt-8 flex flex-col gap-1">
       {NAV.map((item) => {
         const active = isActive(item.href);
         return (
@@ -44,14 +44,14 @@ export function SidebarNav() {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className="group relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors"
+            className="group relative flex items-center gap-3.5 rounded-lg px-3 py-3 text-[15px] font-medium transition-colors"
             style={{
               color: active ? "var(--claret)" : "var(--ink-2)",
-              background: active ? "color-mix(in srgb, var(--claret) 7%, transparent)" : "transparent",
+              background: active ? "color-mix(in srgb, var(--claret) 8%, transparent)" : "transparent",
             }}
           >
             <span
-              className="absolute left-0 top-1/2 h-5 w-[2.5px] -translate-y-1/2 rounded-full bg-[var(--claret)] transition-opacity"
+              className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-[var(--claret)] transition-opacity"
               style={{ opacity: active ? 1 : 0 }}
               aria-hidden
             />
