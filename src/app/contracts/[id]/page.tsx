@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { currentActor } from "@/infrastructure/auth";
 import { getContainer } from "@/composition/container";
 import { IngestStatus } from "@/app/(ui)/components/IngestStatus";
+import { ContractTabs } from "@/app/(ui)/components/ContractTabs";
 import { SummaryPanel } from "@/app/(ui)/components/SummaryPanel";
 import { ClauseList } from "@/app/(ui)/components/ClauseList";
 import { DocumentTree } from "@/app/(ui)/components/DocumentTree";
@@ -51,51 +52,35 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
       </div>
 
       {ready && (
-        <>
-          <nav className="sticky top-0 z-10 mt-8 -mx-2 flex gap-1 border-b border-[var(--paper-edge)] bg-[var(--paper)]/85 px-2 py-2 text-sm backdrop-blur">
-            {[
-              { href: "#summary", label: "Summary" },
-              { href: "#clauses", label: `Clauses · ${clauseList.length}` },
-              { href: "#document", label: "Document View" },
-            ].map((t) => (
-              <a
-                key={t.href}
-                href={t.href}
-                className="rounded-md px-3 py-1.5 text-[var(--ink-2)] transition-colors hover:bg-[color-mix(in_srgb,var(--claret)_8%,transparent)] hover:text-[var(--claret)]"
-              >
-                {t.label}
-              </a>
-            ))}
-          </nav>
-
-          <section id="summary" className="mt-10 scroll-mt-16">
-            <div className="mb-4 flex items-baseline justify-between">
-              <p className="eyebrow">Executive summary</p>
-              {analysis && (
-                <a
-                  href={`/api/contracts/${contract.id}/summary.md`}
-                  className="text-sm text-[var(--claret)] underline-offset-4 hover:underline"
-                >
-                  Export ↓
-                </a>
-              )}
-            </div>
-            <SummaryPanel analysis={analysis} />
-          </section>
-
-          <section id="clauses" className="mt-12 scroll-mt-16">
-            <ClauseList
-              clauses={clauseList}
-              assessments={assessmentList}
-              numberByNodeId={numberByNodeId}
-            />
-          </section>
-
-          <section id="document" className="mt-12 scroll-mt-16">
-            <p className="eyebrow mb-3">Document View</p>
-            <DocumentTree nodes={tree} riskByNodeId={riskByNodeId} />
-          </section>
-        </>
+        <div className="mt-8">
+          <ContractTabs
+            clauseCount={clauseList.length}
+            summary={
+              <div>
+                <div className="mb-4 flex items-baseline justify-between">
+                  <p className="eyebrow">Executive summary</p>
+                  {analysis && (
+                    <a
+                      href={`/api/contracts/${contract.id}/summary.md`}
+                      className="text-sm text-[var(--claret)] underline-offset-4 hover:underline"
+                    >
+                      Export ↓
+                    </a>
+                  )}
+                </div>
+                <SummaryPanel analysis={analysis} />
+              </div>
+            }
+            clauses={
+              <ClauseList
+                clauses={clauseList}
+                assessments={assessmentList}
+                numberByNodeId={numberByNodeId}
+              />
+            }
+            document={<DocumentTree nodes={tree} riskByNodeId={riskByNodeId} />}
+          />
+        </div>
       )}
     </div>
   );
