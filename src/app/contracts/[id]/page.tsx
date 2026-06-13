@@ -41,7 +41,17 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
       {ready && (
         <>
           <section className="mt-10">
-            <p className="eyebrow mb-4">Executive summary</p>
+            <div className="mb-4 flex items-baseline justify-between">
+              <p className="eyebrow">Executive summary</p>
+              {analysis && (
+                <a
+                  href={`/api/contracts/${contract.id}/summary.md`}
+                  className="text-sm text-[var(--claret)] underline-offset-4 hover:underline"
+                >
+                  Export ↓
+                </a>
+              )}
+            </div>
             <SummaryPanel analysis={analysis} />
           </section>
 

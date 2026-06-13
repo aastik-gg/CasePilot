@@ -23,6 +23,7 @@ import { ScoreStage } from "@/application/pipeline/ScoreStage";
 import { SummariseStage } from "@/application/pipeline/SummariseStage";
 import { PipelineRunner } from "@/application/PipelineRunner";
 import { RegisterContractUseCase } from "@/application/RegisterContractUseCase";
+import { CompareClausesUseCase } from "@/application/CompareClausesUseCase";
 import type { Stage, StageName } from "@/domain/ports/Stage";
 import type {
   AnalysisRepo,
@@ -48,6 +49,7 @@ export interface Container {
   storage: StoragePort;
   runner: PipelineRunner;
   registerContract: RegisterContractUseCase;
+  compareClauses: CompareClausesUseCase;
 }
 
 let _container: Container | null = null;
@@ -83,6 +85,7 @@ export function getContainer(): Container {
   inline?.setDispatch((s, c, o) => runner.runStage(s, c, o));
 
   const registerContract = new RegisterContractUseCase(contracts, queue);
+  const compareClauses = new CompareClausesUseCase(contracts, clauses, assessments, llm);
 
   _container = {
     contracts,
@@ -94,6 +97,7 @@ export function getContainer(): Container {
     storage,
     runner,
     registerContract,
+    compareClauses,
   };
   return _container;
 }

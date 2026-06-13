@@ -19,6 +19,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/" className="rounded px-2 py-1.5 hover:bg-[var(--paper-edge)]/50">
             Contracts
           </Link>
+          <Link href="/compare" className="rounded px-2 py-1.5 hover:bg-[var(--paper-edge)]/50">
+            Compare
+          </Link>
         </nav>
         <div className="mt-auto pt-6">{userId ? <UserButton /> : <SignInButton />}</div>
       </aside>

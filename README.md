@@ -44,4 +44,9 @@ code dispatches stages durably over HTTP.
   with cited rationale; `ScoreStage` assigns risk score/severity/categories; **overall score computed
   deterministically in code** (`RiskAggregator`, not the LLM). UI: risk gauge, category breakdown,
   risk-ranked clause cards with deviation chips. Pipeline: ingest → extract → benchmark → score → summarise.
-- **P3 — Compare + Polish** (next) side-by-side clause comparison across contracts, exports, polish.
+- **P3 — Compare + Polish ✅** Side-by-side clause comparison across contracts (`CompareClausesUseCase`,
+  `/compare` UI with favourability ranking + material differences); Markdown summary export; empty/error
+  states and the Compare nav. v1 aligns clauses by type (embedding alignment via pgvector is a noted refinement).
+
+All four phases (P0–P3) are in. Success metrics M1–M5 (`../docs/PRD.md` §2.4) are exercised end to end;
+the remaining work is a golden-corpus eval harness to score them automatically.

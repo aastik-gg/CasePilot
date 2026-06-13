@@ -19,6 +19,7 @@ export class ModelRouter {
       case "benchmark":
       case "score":
       case "summarise":
+      case "compare":
         return {
           modelId: "claude-opus-4-8",
           providerOptions: {
