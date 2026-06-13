@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* ── CasePilot design tokens — "Counsel's Brief" (FRONTEND_DESIGN §3) ───────── */
+:root {
+  /* surface (vellum) */
+  --paper: #f6f3ec;
+  --paper-2: #fbfaf5;
+  --paper-edge: #ede8dc;
+  /* ink */
+  --ink: #16181d;
+  --ink-2: #3a3d44;
+  --ink-3: #6b6e76;
+  /* brand (oxblood / claret) */
+  --claret: #7a2e33;
+  --claret-soft: #a8565b;
+  /* risk scale (semantic, muted) */
+  --risk-standard: #5e7355;
+  --risk-medium: #b8862e;
+  --risk-high: #b85c38;
+  --risk-critical: #8c2f39;
+  /* system */
+  --focus: #2f5e7a;
+  --radius: 6px;
+  --shadow-page: 0 1px 2px rgba(22, 24, 29, 0.04), 0 8px 24px rgba(22, 24, 29, 0.06);
+}
+
+/* Expose tokens to Tailwind utilities (bg-paper, text-ink, font-serif, …). */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-edge: var(--paper-edge);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-claret: var(--claret);
+  --color-claret-soft: var(--claret-soft);
+  --color-risk-standard: var(--risk-standard);
+  --color-risk-medium: var(--risk-medium);
+  --color-risk-high: var(--risk-high);
+  --color-risk-critical: var(--risk-critical);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+}
+body {
+  font-family: var(--font-body), system-ui, sans-serif;
+  /* faint paper grain — subliminal tactility, never visible as "texture" */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3, .display {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+.mono, .verbatim, .num {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.eyebrow {
+  font-size: 0.75rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
