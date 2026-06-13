@@ -10,6 +10,7 @@ export const PROMPT_VERSIONS = {
   extract: "extract-v1",
   benchmark: "benchmark-v1",
   score: "score-v1",
+  suggest: "suggest-v1",
   summarise: "summarise-v2",
 } as const;
 
@@ -113,6 +114,39 @@ export function buildScorePrompt(
     return `[${ref}] ${CLAUSE_LABELS[c.clauseType]}\nClause text: ${truncate(c.verbatimText, 400)}\n${dev}`;
   });
 
+  const header = `Contract: "${contract.title}". Perspective: ${contract.partyPerspective}.`;
+  return { prompt: `${header}\n\n${blocks.join("\n\n")}`, refToClauseId };
+}
+
+// ── Suggest (redline language for flagged clauses) ────────────────────────────
+export const SUGGEST_SYSTEM = `You propose redline replacement language for contract clauses that are unfavourable or unusual (PRD bonus).
+For each clause given, write concise, professional replacement language that moves the clause toward the
+market-standard baseline from the customer's perspective. Keep it drafting-ready and specific; do not
+explain — output only the proposed clause language.`;
+
+/** Builds the suggest prompt for the already-flagged clauses. Returns null if nothing needs a redline. */
+export function buildSuggestPrompt(
+  contract: Contract,
+  clauses: Clause[],
+  assessments: ClauseAssessment[],
+  standards: MarketStandard[],
+): { prompt: string; refToClauseId: Map<string, string> } | null {
+  const stdByType = new Map(standards.map((s) => [s.clauseType, s] as const));
+  const byClause = new Map(assessments.map((a) => [a.clauseId, a] as const));
+  const flagged = clauses.filter((c) => {
+    const a = byClause.get(c.id);
+    return a && (a.deviation === "unfavourable" || a.deviation === "unusual");
+  });
+  if (flagged.length === 0) return null;
+
+  const refToClauseId = new Map<string, string>();
+  const blocks = flagged.map((c, i) => {
+    const ref = `c${i}`;
+    refToClauseId.set(ref, c.id);
+    const std = stdByType.get(c.clauseType);
+    const baseline = std ? `Target standard: ${std.standardPosition}` : "Target: general market norm.";
+    return `[${ref}] ${CLAUSE_LABELS[c.clauseType]}\nCurrent: ${truncate(c.verbatimText)}\n${baseline}`;
+  });
   const header = `Contract: "${contract.title}". Perspective: ${contract.partyPerspective}.`;
   return { prompt: `${header}\n\n${blocks.join("\n\n")}`, refToClauseId };
 }

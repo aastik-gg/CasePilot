@@ -78,6 +78,16 @@ export function ClauseList({
                   >
                     {a.rationale}
                   </p>
+                  {a.suggestedRedline && (
+                    <div className="mt-3 rounded border border-dashed border-[var(--paper-edge)] p-3">
+                      <p className="eyebrow mb-1" style={{ color: "var(--risk-standard)" }}>
+                        Suggested language
+                      </p>
+                      <p className="mono text-xs leading-[1.5] text-[var(--ink-2)]">
+                        {a.suggestedRedline}
+                      </p>
+                    </div>
+                  )}
                 </>
               ) : (
                 <span className="num text-xs text-[var(--ink-3)]">

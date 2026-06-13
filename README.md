@@ -48,5 +48,13 @@ code dispatches stages durably over HTTP.
   `/compare` UI with favourability ranking + material differences); Markdown summary export; empty/error
   states and the Compare nav. v1 aligns clauses by type (embedding alignment via pgvector is a noted refinement).
 
-All four phases (P0–P3) are in. Success metrics M1–M5 (`../docs/PRD.md` §2.4) are exercised end to end;
-the remaining work is a golden-corpus eval harness to score them automatically.
+- **Bonus ✅** OCR for scanned PDFs (Claude vision fallback when a PDF has no text layer);
+  redline suggestions (`SuggestStage` proposes standard-aligned language for flagged clauses);
+  market-standards admin UI (`/settings/standards`); embedding-based clause alignment for compare
+  (pgvector + OpenAI embeddings, **optional** — set `OPENAI_API_KEY`, else compare aligns by type).
+- **Eval ✅** Vitest harness: pure `RiskAggregator` unit tests + a golden-corpus scorecard that runs
+  the real stages + model and scores M1–M5 (`pnpm test` / `pnpm test:eval`; live eval needs `ANTHROPIC_API_KEY`).
+
+All four phases (P0–P3) plus all bonus features are in. Success metrics M1–M5 (`../docs/PRD.md` §2.4)
+are exercised end to end and validated by the eval harness. Pipeline:
+ingest → extract → benchmark → score → suggest → summarise.

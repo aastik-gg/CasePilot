@@ -119,6 +119,7 @@ export class FakeAssessmentRepo implements AssessmentRepo {
         riskScore: null,
         severity: null,
         riskCategories: [],
+        suggestedRedline: null,
       })),
     );
   }
@@ -133,6 +134,14 @@ export class FakeAssessmentRepo implements AssessmentRepo {
           a.severity = m.severity;
           a.riskCategories = m.riskCategories;
         }
+      }
+    }
+  }
+  async setSuggestions(items: { clauseId: string; suggestedRedline: string }[]) {
+    for (const list of this.store.values()) {
+      for (const a of list) {
+        const m = items.find((i) => i.clauseId === a.clauseId);
+        if (m) a.suggestedRedline = m.suggestedRedline;
       }
     }
   }

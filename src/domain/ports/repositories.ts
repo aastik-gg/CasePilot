@@ -52,6 +52,8 @@ export interface AssessmentRepo {
   setScores(
     items: { clauseId: string; riskScore: number; severity: Severity; riskCategories: RiskCategory[] }[],
   ): Promise<void>;
+  /** Suggest stage: attach proposed redline language to existing assessments by clause ID (bonus). */
+  setSuggestions(items: { clauseId: string; suggestedRedline: string }[]): Promise<void>;
   listByContract(contractId: string): Promise<ClauseAssessment[]>;
 }
 
@@ -61,6 +63,16 @@ export interface MarketStandardRepo {
   forContract(orgId: string, perspective: PartyPerspective): Promise<MarketStandard[]>;
   list(orgId: string): Promise<MarketStandard[]>;
   upsert(orgId: string, input: MarketStandardInput): Promise<MarketStandard>;
+}
+
+/** Clause embeddings for cross-contract alignment (pgvector). Optional — see EmbeddingPort. */
+export interface ClauseEmbeddingRepo {
+  replaceForContract(
+    contractId: string,
+    items: { clauseId: string; clauseType: string; embedding: number[] }[],
+  ): Promise<void>;
+  /** Clause in `contractId` nearest (cosine) to the query embedding; null if none stored. */
+  nearestInContract(contractId: string, embedding: number[]): Promise<string | null>;
 }
 
 /** Audit trail for every model call (usage + provenance; no contract text stored — privacy). */

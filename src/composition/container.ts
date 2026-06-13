@@ -2,6 +2,7 @@ import { env } from "@/infrastructure/env";
 import {
   DrizzleAnalysisRepo,
   DrizzleAssessmentRepo,
+  DrizzleClauseEmbeddingRepo,
   DrizzleClauseRepo,
   DrizzleContractRepo,
   DrizzleDocumentNodeRepo,
@@ -16,10 +17,12 @@ import { RedisStateStore } from "@/infrastructure/queue/RedisStateStore";
 import { InMemoryStateStore } from "@/infrastructure/queue/InMemoryStateStore";
 import { ModelRouter } from "@/infrastructure/llm/ModelRouter";
 import { AiSdkLlmAdapter } from "@/infrastructure/llm/AiSdkLlmAdapter";
+import { NullEmbeddingAdapter, OpenAiEmbeddingAdapter } from "@/infrastructure/llm/OpenAiEmbeddingAdapter";
 import { IngestStage } from "@/application/pipeline/IngestStage";
 import { ExtractStage } from "@/application/pipeline/ExtractStage";
 import { BenchmarkStage } from "@/application/pipeline/BenchmarkStage";
 import { ScoreStage } from "@/application/pipeline/ScoreStage";
+import { SuggestStage } from "@/application/pipeline/SuggestStage";
 import { SummariseStage } from "@/application/pipeline/SummariseStage";
 import { PipelineRunner } from "@/application/PipelineRunner";
 import { RegisterContractUseCase } from "@/application/RegisterContractUseCase";
@@ -64,9 +67,11 @@ export function getContainer(): Container {
   const analyses = new DrizzleAnalysisRepo();
   const marketStandards = new DrizzleMarketStandardRepo();
   const llmCalls = new DrizzleLlmCallRepo();
+  const clauseEmbeddings = new DrizzleClauseEmbeddingRepo();
   const storage = new R2StorageAdapter();
   const parser = new DocumentParser();
   const llm = new AiSdkLlmAdapter(new ModelRouter(), llmCalls);
+  const embeddings = env.hasEmbeddings() ? new OpenAiEmbeddingAdapter() : new NullEmbeddingAdapter();
   const state = env.hasRedis() ? new RedisStateStore() : new InMemoryStateStore();
 
   // Prod: durable QStash dispatch. Local dev (no QStash): run stages inline in-process.
@@ -75,9 +80,10 @@ export function getContainer(): Container {
 
   const stages = new Map<StageName, Stage>([
     ["ingest", new IngestStage(storage, parser, contracts, nodes)],
-    ["extract", new ExtractStage(llm, nodes, clauses)],
+    ["extract", new ExtractStage(llm, nodes, clauses, embeddings, clauseEmbeddings)],
     ["benchmark", new BenchmarkStage(llm, clauses, assessments, marketStandards)],
     ["score", new ScoreStage(llm, clauses, assessments)],
+    ["suggest", new SuggestStage(llm, clauses, assessments, marketStandards)],
     ["summarise", new SummariseStage(llm, clauses, assessments, analyses)],
   ]);
 
@@ -85,7 +91,14 @@ export function getContainer(): Container {
   inline?.setDispatch((s, c, o) => runner.runStage(s, c, o));
 
   const registerContract = new RegisterContractUseCase(contracts, queue);
-  const compareClauses = new CompareClausesUseCase(contracts, clauses, assessments, llm);
+  const compareClauses = new CompareClausesUseCase(
+    contracts,
+    clauses,
+    assessments,
+    llm,
+    embeddings,
+    clauseEmbeddings,
+  );
 
   _container = {
     contracts,

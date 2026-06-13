@@ -1,9 +1,10 @@
-import { and, asc, eq, isNull, or } from "drizzle-orm";
+import { and, asc, eq, isNull, or, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { db } from "@/infrastructure/db/client";
 import {
   analyses,
   clauseAssessments,
+  clauseEmbeddings,
   clauses,
   contracts,
   crossReferences,
@@ -14,6 +15,7 @@ import {
 import type {
   AnalysisRepo,
   AssessmentRepo,
+  ClauseEmbeddingRepo,
   ClauseRepo,
   ContractRepo,
   DocumentNodeRepo,
@@ -291,6 +293,17 @@ export class DrizzleAssessmentRepo implements AssessmentRepo {
     });
   }
 
+  async setSuggestions(items: { clauseId: string; suggestedRedline: string }[]): Promise<void> {
+    await db().transaction(async (tx) => {
+      for (const i of items) {
+        await tx
+          .update(clauseAssessments)
+          .set({ suggestedRedline: i.suggestedRedline })
+          .where(eq(clauseAssessments.clauseId, i.clauseId));
+      }
+    });
+  }
+
   async listByContract(contractId: string): Promise<ClauseAssessment[]> {
     const rows = await db()
       .select()
@@ -305,6 +318,7 @@ export class DrizzleAssessmentRepo implements AssessmentRepo {
       riskScore: r.riskScore,
       severity: (r.severity as Severity | null) ?? null,
       riskCategories: r.riskCategories as RiskCategory[],
+      suggestedRedline: r.suggestedRedline,
     }));
   }
 }
@@ -383,5 +397,37 @@ export class DrizzleMarketStandardRepo implements MarketStandardRepo {
         .returning();
       return this.toMS(row);
     });
+  }
+}
+
+export class DrizzleClauseEmbeddingRepo implements ClauseEmbeddingRepo {
+  async replaceForContract(
+    contractId: string,
+    items: { clauseId: string; clauseType: string; embedding: number[] }[],
+  ): Promise<void> {
+    await db().transaction(async (tx) => {
+      await tx.delete(clauseEmbeddings).where(eq(clauseEmbeddings.contractId, contractId));
+      if (items.length) {
+        await tx.insert(clauseEmbeddings).values(
+          items.map((i) => ({
+            clauseId: i.clauseId,
+            contractId,
+            clauseType: i.clauseType,
+            embedding: i.embedding,
+          })),
+        );
+      }
+    });
+  }
+
+  async nearestInContract(contractId: string, embedding: number[]): Promise<string | null> {
+    const literal = `[${embedding.join(",")}]`;
+    const [row] = await db()
+      .select({ clauseId: clauseEmbeddings.clauseId })
+      .from(clauseEmbeddings)
+      .where(eq(clauseEmbeddings.contractId, contractId))
+      .orderBy(sql`${clauseEmbeddings.embedding} <=> ${literal}::vector`)
+      .limit(1);
+    return row?.clauseId ?? null;
   }
 }

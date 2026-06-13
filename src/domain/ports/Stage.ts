@@ -10,6 +10,7 @@ export const STAGE_NAMES = [
   "extract",
   "benchmark",
   "score",
+  "suggest",
   "summarise",
 ] as const;
 export type StageName = (typeof STAGE_NAMES)[number];
@@ -20,8 +21,9 @@ export const STAGE_ORDER: readonly StageName[] = [
   "extract",
   "benchmark",
   "score",
+  "suggest", // bonus: redline suggestions for flagged clauses
   "summarise",
-]; // P2
+];
 
 export interface StageContext {
   readonly contract: Contract;

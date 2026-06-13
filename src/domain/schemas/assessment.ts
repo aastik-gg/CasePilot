@@ -19,6 +19,7 @@ export const ClauseAssessmentSchema = z.object({
   riskScore: z.number().int().min(0).max(100).nullable(), // null until the score stage runs
   severity: Severity.nullable(),
   riskCategories: z.array(RiskCategory),
+  suggestedRedline: z.string().nullable(), // standard-aligned replacement language (bonus)
 });
 export type ClauseAssessment = z.infer<typeof ClauseAssessmentSchema>;
 
@@ -41,6 +42,16 @@ export const ScoreSchema = z.object({
       riskScore: z.number(),
       severity: Severity,
       riskCategories: z.array(RiskCategory),
+    }),
+  ),
+});
+
+/** Suggest stage LLM output — proposed standard-aligned replacement language per flagged clause. */
+export const SuggestSchema = z.object({
+  suggestions: z.array(
+    z.object({
+      clauseRef: z.string(),
+      suggestedLanguage: z.string(),
     }),
   ),
 });

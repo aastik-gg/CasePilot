@@ -18,6 +18,7 @@ function mk(
     riskScore,
     severity,
     riskCategories,
+    suggestedRedline: null,
   };
 }
 

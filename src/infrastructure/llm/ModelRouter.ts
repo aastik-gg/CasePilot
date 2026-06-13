@@ -18,6 +18,7 @@ export class ModelRouter {
       case "extract":
       case "benchmark":
       case "score":
+      case "suggest":
       case "summarise":
       case "compare":
         return {

@@ -1,7 +1,7 @@
 import type { z } from "zod";
 
 /** Tasks the LLM performs. Each maps (in the ModelRouter) to a model + effort/thinking config. */
-export type LlmTask = "extract" | "benchmark" | "score" | "summarise" | "compare";
+export type LlmTask = "extract" | "benchmark" | "score" | "suggest" | "summarise" | "compare";
 
 export interface LlmUsage {
   inputTokens: number;

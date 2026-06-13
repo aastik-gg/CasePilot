@@ -1,7 +1,13 @@
 import { AppError, err, ok, type Result } from "@/domain/result";
 import type { Stage, StageContext, StageOutput } from "@/domain/ports/Stage";
 import type { LlmPort } from "@/domain/ports/llm";
-import type { ClauseRepo, DocumentNodeRepo, NewClause } from "@/domain/ports/repositories";
+import type { EmbeddingPort } from "@/domain/ports/embedding";
+import type {
+  ClauseEmbeddingRepo,
+  ClauseRepo,
+  DocumentNodeRepo,
+  NewClause,
+} from "@/domain/ports/repositories";
 import { ClauseExtractionSchema } from "@/domain/schemas/clause";
 import { EXTRACT_SYSTEM, PROMPT_VERSIONS, buildExtractPrompt } from "@/application/pipeline/prompts";
 
@@ -20,6 +26,8 @@ export class ExtractStage implements Stage {
     private readonly llm: LlmPort,
     private readonly nodes: DocumentNodeRepo,
     private readonly clauses: ClauseRepo,
+    private readonly embeddings?: EmbeddingPort,
+    private readonly clauseEmbeddings?: ClauseEmbeddingRepo,
   ) {}
 
   async run(ctx: StageContext): Promise<Result<StageOutput>> {
@@ -59,9 +67,23 @@ export class ExtractStage implements Stage {
       }
 
       await this.clauses.replaceForContract(contract.id, out);
+      await this.embedClauses(contract.id);
       return ok({ produced: out.length });
     } catch (cause) {
       return err(new AppError("pipeline_failed", `extract failed for ${contract.id}`, cause));
     }
+  }
+
+  /** Optional: store clause embeddings for cross-contract alignment (bonus). No-op without a provider. */
+  private async embedClauses(contractId: string): Promise<void> {
+    if (!this.embeddings?.enabled() || !this.clauseEmbeddings) return;
+    const saved = await this.clauses.listByContract(contractId);
+    if (saved.length === 0) return;
+    const vectors = await this.embeddings.embed(saved.map((c) => c.verbatimText));
+    if (vectors.length !== saved.length) return;
+    await this.clauseEmbeddings.replaceForContract(
+      contractId,
+      saved.map((c, i) => ({ clauseId: c.id, clauseType: c.clauseType, embedding: vectors[i] })),
+    );
   }
 }

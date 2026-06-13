@@ -1,6 +1,12 @@
 import { AppError, err, ok, type Result } from "@/domain/result";
 import type { LlmPort } from "@/domain/ports/llm";
-import type { AssessmentRepo, ClauseRepo, ContractRepo } from "@/domain/ports/repositories";
+import type { EmbeddingPort } from "@/domain/ports/embedding";
+import type {
+  AssessmentRepo,
+  ClauseEmbeddingRepo,
+  ClauseRepo,
+  ContractRepo,
+} from "@/domain/ports/repositories";
 import { CLAUSE_LABELS, type ClauseType } from "@/domain/schemas/clause";
 import { CompareSchema, type CompareEntry, type CompareResult } from "@/domain/schemas/compare";
 
@@ -22,6 +28,8 @@ export class CompareClausesUseCase {
     private readonly clauses: ClauseRepo,
     private readonly assessments: AssessmentRepo,
     private readonly llm: LlmPort,
+    private readonly embeddings?: EmbeddingPort,
+    private readonly clauseEmbeddings?: ClauseEmbeddingRepo,
   ) {}
 
   async execute(
@@ -58,6 +66,10 @@ export class CompareClausesUseCase {
       if (entries.length < 2) {
         return err(new AppError("validation", "need at least two accessible contracts to compare"));
       }
+
+      // Embedding alignment (bonus): fill in contracts that lack an exact type match by finding the
+      // clause nearest to a reference clause from a contract that has it. No-op without a provider.
+      await this.alignByEmbedding(entries);
 
       const withText = entries.filter((e) => e.clauseText);
       if (withText.length < 1) {
@@ -99,6 +111,25 @@ export class CompareClausesUseCase {
       });
     } catch (cause) {
       return err(new AppError("internal", "compare failed", cause));
+    }
+  }
+
+  /** Fill missing clause columns using nearest-by-embedding to a reference clause (bonus). */
+  private async alignByEmbedding(entries: { contractId: string; clauseText: string | null }[]): Promise<void> {
+    if (!this.embeddings?.enabled() || !this.clauseEmbeddings) return;
+    const reference = entries.find((e) => e.clauseText)?.clauseText;
+    const missing = entries.filter((e) => !e.clauseText);
+    if (!reference || missing.length === 0) return;
+
+    const [queryVector] = await this.embeddings.embed([reference]);
+    if (!queryVector) return;
+
+    for (const entry of missing) {
+      const nearId = await this.clauseEmbeddings.nearestInContract(entry.contractId, queryVector);
+      if (!nearId) continue;
+      const list = await this.clauses.listByContract(entry.contractId);
+      const found = list.find((c) => c.id === nearId);
+      if (found) entry.clauseText = found.verbatimText;
     }
   }
 }

@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -131,6 +132,7 @@ export const clauseAssessments = pgTable(
     riskScore: integer("risk_score"),
     severity: text("severity"),
     riskCategories: text("risk_categories").array().notNull(),
+    suggestedRedline: text("suggested_redline"),
   },
   (t) => [index("clause_assessments_contract_idx").on(t.contractId)],
 );
@@ -148,6 +150,19 @@ export const llmCalls = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("llm_calls_contract_idx").on(t.contractId)],
+);
+
+export const clauseEmbeddings = pgTable(
+  "clause_embeddings",
+  {
+    clauseId: uuid("clause_id")
+      .primaryKey()
+      .references(() => clauses.id, { onDelete: "cascade" }),
+    contractId: uuid("contract_id").notNull(),
+    clauseType: text("clause_type").notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }).notNull(),
+  },
+  (t) => [index("clause_embeddings_contract_idx").on(t.contractId)],
 );
 
 export const pipelineRuns = pgTable(

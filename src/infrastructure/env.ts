@@ -39,4 +39,6 @@ export const env = {
   /** When false (no QSTASH_TOKEN), the pipeline dispatches stages inline for local dev. */
   hasQueue: () => Boolean(optional("QSTASH_TOKEN")),
   hasRedis: () => Boolean(optional("UPSTASH_REDIS_REST_URL")),
+  /** Embeddings (clause alignment) are optional — Anthropic has no embeddings API. */
+  hasEmbeddings: () => Boolean(optional("OPENAI_API_KEY")),
 } as const;
