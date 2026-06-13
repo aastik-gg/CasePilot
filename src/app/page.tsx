@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { currentActor } from "@/infrastructure/auth";
 import { getContainer } from "@/composition/container";
 import { Dropzone } from "@/app/(ui)/components/Dropzone";
+import { Docket } from "@/app/(ui)/components/Docket";
 
 export default async function Home() {
   const actor = await currentActor();
@@ -24,41 +24,14 @@ export default async function Home() {
         <Dropzone />
       </section>
 
-      <section className="mt-16">
-        <div className="mb-3 flex items-baseline justify-between border-b border-[var(--paper-edge)] pb-2">
-          <p className="eyebrow">Docket</p>
-          {contracts.length > 0 && (
-            <span className="text-xs text-[var(--ink-3)]">
-              {contracts.length} contract{contracts.length === 1 ? "" : "s"}
-            </span>
-          )}
-        </div>
-        {contracts.length === 0 ? (
-          <p className="py-6 text-sm text-[var(--ink-3)]">No contracts yet — drop one above to begin.</p>
-        ) : (
-          <ul className="divide-y divide-[var(--paper-edge)]">
-            {contracts.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/contracts/${c.id}`}
-                  className="group flex items-center justify-between gap-4 px-2 py-4 transition-colors hover:bg-[var(--paper-2)]"
-                >
-                  <span
-                    className="truncate text-lg text-[var(--ink)] group-hover:text-[var(--claret)]"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    {c.title}
-                  </span>
-                  <span className="mono shrink-0 text-xs text-[var(--ink-3)]">
-                    {c.pageCount ? `${c.pageCount}p · ` : ""}
-                    {c.status}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <Docket
+        contracts={contracts.map((c) => ({
+          id: c.id,
+          title: c.title,
+          pageCount: c.pageCount,
+          status: c.status,
+        }))}
+      />
     </div>
   );
 }
