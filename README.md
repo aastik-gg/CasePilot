@@ -2,6 +2,8 @@
 
 ⚖️ **Legal Document Intelligence System** — find the risk in 100-page contracts before your lawyer does.
 
+**Live demo:** https://case-pilot-pi.vercel.app/
+
 Planning docs live in `../docs/` (`PRD.md`, `TECH_SPEC.md`, `PROJECT_PLAN.md`, `FRONTEND_DESIGN.md`).
 
 ## Stack
