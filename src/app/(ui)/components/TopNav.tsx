@@ -25,7 +25,7 @@ function Icon({ d }: { d: string }) {
 }
 
 const NAV: { href: string; label: string; icon: ReactNode }[] = [
-  { href: "/", label: "Contracts", icon: <Icon d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z|M14 3v5h5|M9 13h6|M9 17h6" /> },
+  { href: "/contracts", label: "Contracts", icon: <Icon d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z|M14 3v5h5|M9 13h6|M9 17h6" /> },
   { href: "/compare", label: "Compare", icon: <Icon d="M4 5h7v14H4z|M13 5h7v14h-7z" /> },
   { href: "/settings/standards", label: "Standards", icon: <Icon d="M4 7h16|M4 12h16|M4 17h16" /> },
 ];
@@ -33,7 +33,9 @@ const NAV: { href: string; label: string; icon: ReactNode }[] = [
 export function TopNav() {
   const pathname = usePathname();
   const isActive = (href: string) =>
-    href === "/" ? pathname === "/" || pathname.startsWith("/contracts") : pathname.startsWith(href);
+    href === "/contracts"
+      ? pathname === "/contracts" || pathname.startsWith("/contracts/")
+      : pathname.startsWith(href);
 
   return (
     <nav className="flex items-center gap-1">
