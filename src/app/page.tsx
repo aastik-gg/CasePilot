@@ -31,7 +31,7 @@ export default function LandingPage() {
           the 10% that needs a human decision.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <SignUpButton mode="modal">
+          <SignUpButton mode="modal" forceRedirectUrl="/contracts">
             <button
               type="button"
               className="rounded-md bg-[var(--claret)] px-5 py-2.5 text-sm font-medium text-[var(--paper)] transition-colors hover:bg-[var(--claret-soft)]"
@@ -39,7 +39,7 @@ export default function LandingPage() {
               Get started
             </button>
           </SignUpButton>
-          <SignInButton mode="modal">
+          <SignInButton mode="modal" forceRedirectUrl="/contracts">
             <button
               type="button"
               className="rounded-md border border-[var(--paper-edge)] bg-[var(--paper-2)] px-5 py-2.5 text-sm font-medium text-[var(--ink)] transition-colors hover:border-[var(--ink-3)]"
@@ -70,7 +70,7 @@ export default function LandingPage() {
           Start with a single upload. No setup required—your docket is waiting.
         </p>
         <div className="mt-6">
-          <SignUpButton mode="modal">
+          <SignUpButton mode="modal" forceRedirectUrl="/contracts">
             <button
               type="button"
               className="rounded-md bg-[var(--claret)] px-5 py-2.5 text-sm font-medium text-[var(--paper)] transition-colors hover:bg-[var(--claret-soft)]"
@@ -81,7 +81,7 @@ export default function LandingPage() {
         </div>
         <p className="mt-4 text-sm text-[var(--ink-3)]">
           Already have an account?{" "}
-          <SignInButton mode="modal">
+          <SignInButton mode="modal" forceRedirectUrl="/contracts">
             <button type="button" className="text-[var(--claret)] underline-offset-2 hover:underline">
               Sign in
             </button>
